@@ -163,4 +163,5 @@ so that `huri hub install` (from the tag) and huri-modules' CI (from the
 reviewed submodule) install `events/` and the module in one pip call.
 
 HuRI as a whole — what it is, how the repositories fit together — is presented
-at [Lucy-Robotics/HuRI-landing](https://github.com/Lucy-Robotics/HuRI-landing).
+in the [HuRI ecosystem](https://github.com/Lucy-Robotics/huri-core#huri-ecosystem)
+section of huri-core's README.

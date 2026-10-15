@@ -158,10 +158,10 @@ def test_install_refuses_bad_arguments(args, message):
 
 
 def test_readme_links_only_existing_huri_repositories():
-    """The showcase is HuRI-landing; the old HuRI name redirects to huri-core."""
+    """huri-core is the front door; the archived HuRI-landing is never linked."""
     readme = (ROOT / "README.md").read_text()
     repos = set(re.findall(r"github\.com/Lucy-Robotics/([\w-]+)", readme))
-    assert repos == {"huri-core", "huri-modules", "HuRI-landing"}
+    assert repos == {"huri-core", "huri-modules"}
 
 
 def test_rename_leaves_license_ci_and_local_dirs_alone(renamed):

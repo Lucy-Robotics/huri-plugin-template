@@ -3,6 +3,7 @@
 This file tests the template, not the module made from it: rename.sh deletes it.
 """
 
+import re
 import shutil
 import subprocess
 import sys
@@ -31,11 +32,16 @@ def template_on_path(monkeypatch):
         del sys.modules[name]
 
 
+def _copy(tmp_path):
+    copy = tmp_path / "huri-module-servo"
+    shutil.copytree(ROOT, copy, ignore=_LOCAL)
+    return copy
+
+
 @pytest.fixture
 def renamed(tmp_path):
     """A copy of the template renamed to "servo" (never rename this checkout)."""
-    copy = tmp_path / "huri-module-servo"
-    shutil.copytree(ROOT, copy, ignore=_LOCAL)
+    copy = _copy(tmp_path)
     # Stand-ins for a virtualenv and a git directory: rename.sh must not touch
     # them.
     for d in (".venv", ".git"):
@@ -98,6 +104,64 @@ def test_rename_leaves_no_trace_of_the_example(renamed):
         text=True,
     ).stdout.split()
     assert leftovers == []
+
+
+def test_rename_removes_the_template_bootstrap(renamed):
+    """The renamed README is the module's: no instructions to rename it."""
+    assert not (renamed / "rename.sh").exists()
+    readme = (renamed / "README.md").read_text()
+    for gone in ("rename.sh", "Rename the", "template:start", "template:end"):
+        assert gone not in readme, gone
+    assert readme.startswith("# huri-module-servo\n")
+    assert "## Installing and testing it" in readme
+
+
+@pytest.mark.parametrize("name", ["huri", "Servo", "1servo", "servo-arm"])
+def test_rename_refuses_bad_names(tmp_path, name):
+    copy = _copy(tmp_path)
+    run = subprocess.run(
+        ["bash", str(copy / "rename.sh"), name], capture_output=True, text=True
+    )
+    assert run.returncode == 2, run.stderr
+    assert (copy / "huri_example").is_dir() and (copy / "rename.sh").is_file()
+
+
+def test_rename_warns_about_a_curated_module_name(tmp_path):
+    copy = _copy(tmp_path)
+    run = subprocess.run(
+        ["bash", str(copy / "rename.sh"), "stt"], capture_output=True, text=True
+    )
+    assert run.returncode == 0, run.stderr
+    assert "curated" in run.stderr
+    assert (copy / "huri_stt").is_dir()
+
+
+@pytest.mark.parametrize(
+    "args, message",
+    [
+        (["--variant", "gpu"], "unknown variant: gpu"),
+        (["--variant=nvidea"], "unknown variant: nvidea"),
+        (["--variant"], "usage"),
+        (["cpu"], "unknown argument: cpu"),
+    ],
+)
+def test_install_refuses_bad_arguments(args, message):
+    """Before installing anything: a typo must not skip the hardware pins."""
+    run = subprocess.run(
+        ["bash", str(ROOT / "install.sh"), *args],
+        capture_output=True,
+        text=True,
+        env={"PATH": "/usr/bin:/bin", "PIP": "false"},
+    )
+    assert run.returncode == 2
+    assert message in run.stderr
+
+
+def test_readme_links_only_existing_huri_repositories():
+    """The showcase is HuRI-landing; the old HuRI name redirects to huri-core."""
+    readme = (ROOT / "README.md").read_text()
+    repos = set(re.findall(r"github\.com/Lucy-Robotics/([\w-]+)", readme))
+    assert repos == {"huri-core", "huri-modules", "HuRI-landing"}
 
 
 def test_rename_leaves_license_ci_and_local_dirs_alone(renamed):

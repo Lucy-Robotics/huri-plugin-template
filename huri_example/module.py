@@ -1,9 +1,9 @@
 from typing import Optional
 
-from huri_events.speech import Transcript
-from huri_events_example import Shout
-
 from huri_core.core.module import Module
+from huri_events.speech import Transcript
+
+from huri_events_example import Shout
 
 
 class Shouter(Module):

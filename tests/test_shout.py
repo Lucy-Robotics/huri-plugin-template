@@ -1,12 +1,12 @@
 """Test the module alone: no server, no Ray (huri_core.testing)."""
 
-from huri_events.speech import Transcript
-from huri_events_example import Shout
-from huri_example.module import Shouter
-
 from huri_core.core.compat import check_manifests, check_modules
 from huri_core.core.plugins import find_manifest, load_events, load_modules
 from huri_core.testing import ModuleHarness
+from huri_events.speech import Transcript
+
+from huri_events_example import Shout
+from huri_example.module import Shouter
 
 
 def test_shouts_finished_transcripts_only():

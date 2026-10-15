@@ -16,6 +16,13 @@ dependencies = [
   # requirements-{cpu,nvidia,amd}.txt (install.sh picks one).
 ]
 
+# Edit these: point them at your module's repository (pip and package indexes
+# show them to whoever installs the module).
+[project.urls]
+Homepage = "https://github.com/your-org/huri-module-example"
+Repository = "https://github.com/your-org/huri-module-example"
+Issues = "https://github.com/your-org/huri-module-example/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
@@ -29,3 +36,17 @@ include = ["huri_example*"]
 
 [tool.setuptools.package-data]
 huri_example = ["huri_module.toml"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["huri_example", "huri_events_example"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203"]
+exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist"]

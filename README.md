@@ -40,7 +40,11 @@ pytest                                  # tests/ runs the module with huri_core.
 ```
 
 `./install.sh --variant cpu|nvidia|amd` chooses the variant instead of probing
-the machine. It installs with `python -m pip`, or `uv pip` in a virtualenv made
+the machine. `requirements-<variant>.txt` pins what the whole package needs on
+that hardware. A package providing several modules, as some in `huri-modules`
+do, can also pin one module's needs in `requirements-<variant>.<module>.txt`:
+the `huri-modules` installer applies it only when that module is planned
+(`install.sh` here installs the one module, from `requirements-<variant>.txt`). It installs with `python -m pip`, or `uv pip` in a virtualenv made
 by `uv` without pip (set `PIP` to choose).
 
 `<ref>` is a git ref of each repository: `dev` for now, a release tag once

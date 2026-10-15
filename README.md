@@ -40,12 +40,17 @@ pytest                                  # tests/ runs the module with huri_core.
 ```
 
 `./install.sh --variant cpu|nvidia|amd` chooses the variant instead of probing
-the machine. `requirements-<variant>.txt` pins what the whole package needs on
-that hardware. A package providing several modules, as some in `huri-modules`
-do, can also pin one module's needs in `requirements-<variant>.<module>.txt`:
-the `huri-modules` installer applies it only when that module is planned
-(`install.sh` here installs the one module, from `requirements-<variant>.txt`). It installs with `python -m pip`, or `uv pip` in a virtualenv made
-by `uv` without pip (set `PIP` to choose).
+the machine. `requirements-<variant>.txt` pins what the package needs on that
+hardware. The per-module `requirements-<variant>.<module>.txt` files apply only
+to the curated packages under `huri-modules/packages`, through its
+`install_local.sh`. For a plugin that provides several modules, give a heavy
+module its own dependencies as an optional extra: declare it under
+`[project.optional-dependencies]`, map it in `[tool.huri-modules.extras]`, and
+set the matching registry `extra` key so that `huri hub install` builds
+`<package>[<extra>]`.
+
+`install.sh` installs with `python -m pip`, or `uv pip` in a virtualenv made by
+`uv` without pip (set `PIP` to choose).
 
 `<ref>` is a git ref of each repository: `dev` for now, a release tag once
 there is one. The two repositories have their own versions and tags

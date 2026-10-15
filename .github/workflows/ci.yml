@@ -31,4 +31,9 @@ jobs:
             "huri-core[server] @ git+https://github.com/Lucy-Robotics/huri-core.git@${HURI_CORE_REF}" \
             "huri-events @ git+https://github.com/Lucy-Robotics/huri-modules.git@${HURI_MODULES_REF}#subdirectory=packages/huri-events"
       - run: ./install.sh --variant cpu
+      - name: style
+        run: |
+          black --check .
+          isort --check-only .
+          flake8
       - run: pytest -q

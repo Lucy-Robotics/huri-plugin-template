@@ -11,7 +11,9 @@ requires-python = ">=3.10"
 dependencies = [
   "huri-core[server]>=0.4.0.dev0,<0.5",
   "huri-events>=0.1,<0.2",          # the curated events it consumes
-  "huri-events-example>=0.1,<0.2",  # the events it introduces (events/)
+  # The events it introduces (events/): on no package index, so installed
+  # together with the module, from the same checkout or tag (see the README).
+  "huri-events-example>=0.1,<0.2",
   # Your module's own dependencies go here; hardware-specific pins go in
   # requirements-{cpu,nvidia,amd}.txt (install.sh picks one).
 ]
@@ -24,7 +26,8 @@ Repository = "https://github.com/your-org/huri-module-example"
 Issues = "https://github.com/your-org/huri-module-example/issues"
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+# flake8-pyproject: flake8 alone does not read [tool.flake8] below.
+dev = ["pytest>=8", "black>=24", "isort>=5", "flake8>=7", "flake8-pyproject>=1.2"]
 
 # How HuRI finds the module: once installed, `name: example` works in a client's
 # YAML (and the server's HURI_MODULES).
@@ -49,4 +52,4 @@ target-version = ["py310"]
 [tool.flake8]
 max-line-length = 88
 extend-ignore = ["E203"]
-exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist"]
+exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist", "*.egg-info"]

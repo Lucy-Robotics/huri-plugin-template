@@ -123,7 +123,17 @@ in huri-modules is a complete reference.
 ## Getting it listed
 
 Tag the repository with the GitHub topic `huri-module` to be found by
-`huri hub search`. Until it is verified, install it with its events by hand,
+`huri hub search`. The hub is not part of `huri-core`: it is the `huri-hub`
+package of huri-modules, a plugin of `huri` (the `"huri.commands"` entry-point
+group of `huri-core`), installed with
+
+```sh
+python -m pip install "huri-hub @ git+https://github.com/Lucy-Robotics/huri-modules.git@<ref>#subdirectory=packages/huri-hub"
+huri hub search example
+```
+
+Until your module is verified, `huri hub install` installs it only when asked
+explicitly (`--community`, or by URL); or install it with its events by hand,
 as shown above.
 
 To be listed as verified, open a pull request to

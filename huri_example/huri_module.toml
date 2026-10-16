@@ -6,4 +6,4 @@ input = { topic = "huri.transcript", event = "huri_events.speech:Transcript" }
 output = { topic = "example.shout", event = "huri_events_example:Shout" }
 events = ["huri-events>=0.1,<0.2", "huri-events-example>=0.1,<0.2"]
 requires = { gpu = false, actuation = false }
-huri_core = ">=0.4.0.dev0,<0.5"
+huri_core = ">=0.4,<0.5"

@@ -158,9 +158,7 @@ def test_install_refuses_bad_arguments(args, message):
 
 
 def test_readme_links_only_existing_huri_repositories():
-    """huri-core is the front door; the archived HuRI-landing is never linked.
-    The template's own CI badge sits in the section rename.sh removes, so a
-    module's README links huri-core and huri-modules only."""
+    """huri-core is the front door; the archived HuRI-landing is never linked."""
     readme = (ROOT / "README.md").read_text()
     module_part = re.sub(
         r"<!-- template:start -->.*?<!-- template:end -->", "", readme, flags=re.S

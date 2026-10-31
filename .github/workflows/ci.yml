@@ -50,8 +50,6 @@ jobs:
       - run: |
           python -m build -o dist .
           python -m build -o dist events
-      # Not --strict: the events package has no README, which twine only warns
-      # about.
       - run: twine check dist/*
       - name: the module's wheel carries its huri_module.toml
         run: |

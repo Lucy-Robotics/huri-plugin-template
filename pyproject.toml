@@ -57,7 +57,6 @@ max-line-length = 88
 extend-ignore = ["E203"]
 exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist", "*.egg-info"]
 
-# `mypy`, with no argument, checks the module and its events package.
 [tool.mypy]
 files = ["huri_example", "events/huri_events_example"]
 python_version = "3.10"

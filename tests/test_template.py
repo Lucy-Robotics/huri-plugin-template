@@ -196,6 +196,29 @@ assert m.output.event == "huri_events_servo:Shout"
     )
 
 
+def test_a_model_library_imported_at_the_top_of_the_module_fails_the_template_tests(
+    tmp_path,
+):
+    """tests/test_model_imports.py, on a copy whose module imports torch."""
+    copy = _copy(tmp_path)
+    module = copy / "huri_example" / "module.py"
+    module.write_text("import torch  # noqa: F401\n" + module.read_text())
+    check = copy / "tests" / "test_model_imports.py"
+    check.write_text(
+        check.read_text().replace(
+            "MODEL_LIBRARIES: list[str] = []", 'MODEL_LIBRARIES: list[str] = ["torch"]'
+        )
+    )
+    run = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", str(check)],
+        cwd=copy,
+        capture_output=True,
+        text=True,
+    )
+    assert run.returncode == 1, run.stdout
+    assert "imports one of ['torch']" in run.stdout
+
+
 @pytest.mark.parametrize("script", ["install.sh", "rename.sh"])
 def test_scripts_parse(script):
     subprocess.run(["bash", "-n", str(ROOT / script)], check=True)

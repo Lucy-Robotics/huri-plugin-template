@@ -9,7 +9,7 @@ on:
 # the huri-modules README. Move both with this module's huri-core range.
 env:
   HURI_CORE_REF: "0.4.0"
-  HURI_MODULES_REF: "0.1.0"
+  HURI_MODULES_REF: "0.2.0"
 
 jobs:
   test:

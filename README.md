@@ -5,6 +5,8 @@ events (`huri-events`) and this repository, not the rest of HuRI, a GPU or a
 running pipeline.
 
 <!-- template:start -->
+[![CI](https://github.com/Lucy-Robotics/huri-plugin-template/actions/workflows/ci.yml/badge.svg)](https://github.com/Lucy-Robotics/huri-plugin-template/actions/workflows/ci.yml)
+
 ## Starting a module from this template
 
 1. On GitHub, click **Use this template** > **Create a new repository**
@@ -58,8 +60,9 @@ repositories have their own versions and tags (`huri-core` 0.4.0,
 compatibility table in the
 [huri-modules README](https://github.com/Lucy-Robotics/huri-modules#readme).
 CI does the same through `HURI_CORE_REF` and `HURI_MODULES_REF`
-(`.github/workflows/ci.yml`), and checks the style with `black`, `isort` and
-`flake8` (installed by the `dev` extra).
+(`.github/workflows/ci.yml`), checks the style with `black`, `isort` and
+`flake8` and the types with `mypy` (installed by the `dev` extra), and builds
+the sdist and wheel of the module and of its events.
 
 Point `[project.urls]` in `pyproject.toml` at your repository.
 
@@ -73,7 +76,7 @@ Point `[project.urls]` in `pyproject.toml` at your repository.
 | `events/` | the events the module introduces, as their own light distribution (`huri-events-example`) in their own topic namespace (`example.*`) — so a client can decode them without installing the module |
 | `tests/` | the module tested alone (`ModuleHarness`), and the checks the server runs at startup |
 | `requirements-{cpu,nvidia,amd}.txt`, `install.sh` | hardware-specific pins, and the script choosing them |
-| `.github/workflows/ci.yml` | the same, on every push, against pinned `huri-core` and `huri-modules` refs |
+| `.github/workflows/ci.yml` | the same, on every push and pull request, against pinned `huri-core` and `huri-modules` refs, plus the build |
 
 The concepts (modules, events, topics, manifests, the server's checks) are
 described in the [huri-core README](https://github.com/Lucy-Robotics/huri-core#readme).

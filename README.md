@@ -5,6 +5,8 @@ events (`huri-events`) and this repository, not the rest of HuRI, a GPU or a
 running pipeline.
 
 <!-- template:start -->
+[![CI](https://github.com/Lucy-Robotics/huri-plugin-template/actions/workflows/ci.yml/badge.svg)](https://github.com/Lucy-Robotics/huri-plugin-template/actions/workflows/ci.yml)
+
 ## Starting a module from this template
 
 1. On GitHub, click **Use this template** > **Create a new repository**
@@ -52,14 +54,15 @@ set the matching registry `extra` key so that `huri hub install` builds
 `install.sh` installs with `python -m pip`, or `uv pip` in a virtualenv made by
 `uv` without pip (set `PIP` to choose).
 
-`<ref>` is a git ref of each repository: `dev` for now, a release tag once
-there is one. The two repositories have their own versions and tags
-(`huri-core` 0.4.0, `huri-modules` 0.1.0, ...); pick a pair from the
+`<ref>` is a git ref of each repository, normally a release tag. The two
+repositories have their own versions and tags (`huri-core` 0.4.0,
+`huri-modules` 0.1.0, ...); pick a pair from the
 compatibility table in the
 [huri-modules README](https://github.com/Lucy-Robotics/huri-modules#readme).
 CI does the same through `HURI_CORE_REF` and `HURI_MODULES_REF`
-(`.github/workflows/ci.yml`), and checks the style with `black`, `isort` and
-`flake8` (installed by the `dev` extra).
+(`.github/workflows/ci.yml`), checks the style with `black`, `isort` and
+`flake8` and the types with `mypy` (installed by the `dev` extra), and builds
+the sdist and wheel of the module and of its events.
 
 Point `[project.urls]` in `pyproject.toml` at your repository.
 
@@ -71,9 +74,9 @@ Point `[project.urls]` in `pyproject.toml` at your repository.
 | `huri_example/huri_module.toml` | its manifest, read by HuRI's startup check and the hub |
 | `pyproject.toml` | the `huri.modules` entry point (`example = ...`), the dependencies and the project URLs |
 | `events/` | the events the module introduces, as their own light distribution (`huri-events-example`) in their own topic namespace (`example.*`) — so a client can decode them without installing the module |
-| `tests/` | the module tested alone (`ModuleHarness`), and the checks the server runs at startup |
+| `tests/` | the module tested alone (`ModuleHarness`), the checks the server runs at startup, and that the module imports without its model libraries |
 | `requirements-{cpu,nvidia,amd}.txt`, `install.sh` | hardware-specific pins, and the script choosing them |
-| `.github/workflows/ci.yml` | the same, on every push, against pinned `huri-core` and `huri-modules` refs |
+| `.github/workflows/ci.yml` | the same, on every push and pull request, against pinned `huri-core` and `huri-modules` refs, plus the build |
 
 The concepts (modules, events, topics, manifests, the server's checks) are
 described in the [huri-core README](https://github.com/Lucy-Robotics/huri-core#readme).
@@ -126,6 +129,8 @@ Run the model as a Ray Serve deployment and make the module a
 `await self._handle.method.remote(...)`; in tests, `LocalHandle(fake)` stands in
 for the deployment. Import heavy libraries (torch, ...) inside the deployment,
 not at module level: the server imports every enabled module to build the app.
+List them in `MODEL_LIBRARIES` (`tests/test_model_imports.py`): the test
+fails if `module.py` imports one of them when it is imported.
 [`packages/huri-module-stt`](https://github.com/Lucy-Robotics/huri-modules/tree/main/packages/huri-module-stt)
 in huri-modules is a complete reference.
 
@@ -163,4 +168,5 @@ so that `huri hub install` (from the tag) and huri-modules' CI (from the
 reviewed submodule) install `events/` and the module in one pip call.
 
 HuRI as a whole — what it is, how the repositories fit together — is presented
-at [Lucy-Robotics/HuRI-landing](https://github.com/Lucy-Robotics/HuRI-landing).
+in the [HuRI ecosystem](https://github.com/Lucy-Robotics/huri-core#huri-ecosystem)
+section of huri-core's README.

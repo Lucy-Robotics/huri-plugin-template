@@ -158,10 +158,17 @@ def test_install_refuses_bad_arguments(args, message):
 
 
 def test_readme_links_only_existing_huri_repositories():
-    """The showcase is HuRI-landing; the old HuRI name redirects to huri-core."""
+    """huri-core is the front door; the archived HuRI-landing is never linked."""
     readme = (ROOT / "README.md").read_text()
-    repos = set(re.findall(r"github\.com/Lucy-Robotics/([\w-]+)", readme))
-    assert repos == {"huri-core", "huri-modules", "HuRI-landing"}
+    module_part = re.sub(
+        r"<!-- template:start -->.*?<!-- template:end -->", "", readme, flags=re.S
+    )
+
+    def repos(text):
+        return set(re.findall(r"github\.com/Lucy-Robotics/([\w-]+)", text))
+
+    assert repos(readme) == {"huri-core", "huri-modules", "huri-plugin-template"}
+    assert repos(module_part) == {"huri-core", "huri-modules"}
 
 
 def test_rename_leaves_license_ci_and_local_dirs_alone(renamed):
@@ -194,6 +201,51 @@ assert m.output.event == "huri_events_servo:Shout"
         env={"PYTHONPATH": f"{renamed}:{renamed / 'events'}"},
         check=True,
     )
+
+
+def test_a_model_library_imported_at_the_top_of_the_module_fails_the_template_tests(
+    tmp_path,
+):
+    """tests/test_model_imports.py, on a copy whose module imports torch."""
+    copy = _copy(tmp_path)
+    module = copy / "huri_example" / "module.py"
+    module.write_text("import torch  # noqa: F401\n" + module.read_text())
+    check = copy / "tests" / "test_model_imports.py"
+    check.write_text(
+        check.read_text().replace(
+            "MODEL_LIBRARIES: list[str] = []", 'MODEL_LIBRARIES: list[str] = ["torch"]'
+        )
+    )
+    run = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", str(check)],
+        cwd=copy,
+        capture_output=True,
+        text=True,
+    )
+    assert run.returncode == 1, run.stdout
+    assert "imports one of ['torch']" in run.stdout
+
+
+def test_a_library_that_checks_sys_modules_passes_the_template_tests(tmp_path):
+    """scipy tests `"torch" in sys.modules`: a hidden library must stay out."""
+    copy = _copy(tmp_path)
+    module = copy / "huri_example" / "module.py"
+    module.write_text(
+        "import sys\n\nassert 'torch' not in sys.modules\n" + module.read_text()
+    )
+    check = copy / "tests" / "test_model_imports.py"
+    check.write_text(
+        check.read_text().replace(
+            "MODEL_LIBRARIES: list[str] = []", 'MODEL_LIBRARIES: list[str] = ["torch"]'
+        )
+    )
+    run = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", str(check)],
+        cwd=copy,
+        capture_output=True,
+        text=True,
+    )
+    assert run.returncode == 0, run.stdout
 
 
 @pytest.mark.parametrize("script", ["install.sh", "rename.sh"])

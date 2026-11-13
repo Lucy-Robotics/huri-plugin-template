@@ -30,9 +30,37 @@ jobs:
             "huri-core[server] @ git+https://github.com/Lucy-Robotics/huri-core.git@${HURI_CORE_REF}" \
             "huri-events @ git+https://github.com/Lucy-Robotics/huri-modules.git@${HURI_MODULES_REF}#subdirectory=packages/huri-events"
       - run: ./install.sh --variant cpu
-      - name: style
+      - name: style and types
         run: |
           black --check .
           isort --check-only .
           flake8
+          mypy
       - run: pytest -q
+
+  build:
+    name: sdist + wheel (module and events)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build twine
+      - run: |
+          python -m build -o dist .
+          python -m build -o dist events
+      - run: twine check dist/*
+      - name: the module's wheel carries its huri_module.toml
+        run: |
+          python - <<'PY'
+          import glob, zipfile
+          from pathlib import Path
+          names = set()
+          for wheel in glob.glob("dist/*.whl"):
+              names |= set(zipfile.ZipFile(wheel).namelist())
+          manifests = [p.as_posix() for p in Path(".").glob("*/huri_module.toml")]
+          print("manifests:", manifests)
+          missing = [m for m in manifests if m not in names]
+          raise SystemExit(f"not in any wheel: {missing}" if missing else 0)
+          PY

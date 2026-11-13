@@ -74,7 +74,7 @@ Point `[project.urls]` in `pyproject.toml` at your repository.
 | `huri_example/huri_module.toml` | its manifest, read by HuRI's startup check and the hub |
 | `pyproject.toml` | the `huri.modules` entry point (`example = ...`), the dependencies and the project URLs |
 | `events/` | the events the module introduces, as their own light distribution (`huri-events-example`) in their own topic namespace (`example.*`) — so a client can decode them without installing the module |
-| `tests/` | the module tested alone (`ModuleHarness`), and the checks the server runs at startup |
+| `tests/` | the module tested alone (`ModuleHarness`), the checks the server runs at startup, and that the module imports without its model libraries |
 | `requirements-{cpu,nvidia,amd}.txt`, `install.sh` | hardware-specific pins, and the script choosing them |
 | `.github/workflows/ci.yml` | the same, on every push and pull request, against pinned `huri-core` and `huri-modules` refs, plus the build |
 
@@ -129,6 +129,8 @@ Run the model as a Ray Serve deployment and make the module a
 `await self._handle.method.remote(...)`; in tests, `LocalHandle(fake)` stands in
 for the deployment. Import heavy libraries (torch, ...) inside the deployment,
 not at module level: the server imports every enabled module to build the app.
+List them in `MODEL_LIBRARIES` (`tests/test_model_imports.py`): the test
+fails if `module.py` imports one of them when it is imported.
 [`packages/huri-module-stt`](https://github.com/Lucy-Robotics/huri-modules/tree/main/packages/huri-module-stt)
 in huri-modules is a complete reference.
 

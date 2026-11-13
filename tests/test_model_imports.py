@@ -13,9 +13,20 @@ ROOT = Path(__file__).resolve().parents[1]
 MODEL_LIBRARIES: list[str] = []
 
 
+# An import hook, not `sys.modules[name] = None`: a library that tests
+# `name in sys.modules` (scipy does for torch) must see it as absent.
+HIDE = """import sys
+class Hide:
+    def find_spec(self, name, path=None, target=None):
+        if name.partition(".")[0] in HIDDEN:
+            raise ModuleNotFoundError(f"{name} is hidden", name=name)
+sys.meta_path.insert(0, Hide())
+"""
+
+
 def test_the_module_imports_with_its_model_libraries_hidden():
-    hide = "".join(f"sys.modules[{name!r}] = None\n" for name in MODEL_LIBRARIES)
-    code = f"import sys\n{hide}from huri_example.module import Shouter\n"
+    # The module, not a class: its top-level imports are what is checked.
+    code = f"HIDDEN = {MODEL_LIBRARIES!r}\n{HIDE}import huri_example.module\n"
     # cwd=ROOT: the module of this checkout, before any installed copy.
     run = subprocess.run(
         [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True

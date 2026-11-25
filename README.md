@@ -55,8 +55,8 @@ set the matching registry `extra` key so that `huri hub install` builds
 `uv` without pip (set `PIP` to choose).
 
 `<ref>` is a git ref of each repository, normally a release tag. The two
-repositories have their own versions and tags (`huri-core` 0.4.0,
-`huri-modules` 0.1.0, ...); pick a pair from the
+repositories have their own versions and tags (`huri-core` 0.5.0,
+`huri-modules` 0.3.0, ...); pick a pair from the
 compatibility table in the
 [huri-modules README](https://github.com/Lucy-Robotics/huri-modules#readme).
 CI does the same through `HURI_CORE_REF` and `HURI_MODULES_REF`

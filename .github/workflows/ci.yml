@@ -8,8 +8,8 @@ on:
 # tag) of each repository: a compatible pair of release tags from the table in
 # the huri-modules README. Move both with this module's huri-core range.
 env:
-  HURI_CORE_REF: "0.4.0"
-  HURI_MODULES_REF: "0.2.0"
+  HURI_CORE_REF: "0.5.0"
+  HURI_MODULES_REF: "0.3.0"
 
 jobs:
   test:

@@ -102,11 +102,32 @@ python -m pip install "huri-events-example @ git+https://github.com/<org>/<repo>
 
 ## Using it in HuRI
 
-Installed on the server, the module is known by its entry point name:
+Install the module and its events into the **server's** virtualenv, in one
+pip call. For a server set up by huri-modules' `install.sh`:
+
+```sh
+cd huri-modules && source .huri-local/env.sh      # the server's virtualenv
+python -m pip install /path/to/huri-module-example /path/to/huri-module-example/events
+python -m pip list | grep '^huri-core '           # unchanged: the server's version
+```
+
+If pip changes the server's `huri-core`, the module's range doesn't match the
+server: the server then refuses to start. Move the module's ranges (see
+[Installing and testing it](#installing-and-testing-it)) rather than keep the
+downgrade.
+
+Installed on the server, the module is known by its entry point name. Enable
+it in the server's allow-list, then restart the server:
 
 ```sh
 HURI_MODULES=stt,tag,example ...        # the server's allow-list
 ```
+
+With huri-modules' `install.sh`, the allow-list is `HURI_MODULES` in
+`config/huri_local.generated.yaml`; restart with `.huri-local/stop.sh` then
+`.huri-local/start.sh`. Re-running `install.sh` regenerates that file, so add
+the module again afterwards. `GET /modules` on the server lists the module
+once it is enabled.
 
 ```yaml
 # client config

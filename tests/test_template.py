@@ -27,13 +27,15 @@ def template_on_path(monkeypatch):
     monkeypatch.syspath_prepend(str(ROOT))
     yield
     for name in [
-        m for m in sys.modules if m.startswith(("huri_example", "huri_events_example"))
+        m
+        for m in sys.modules
+        if m == "example" or m.startswith(("example.", "example_events"))
     ]:
         del sys.modules[name]
 
 
 def _copy(tmp_path):
-    copy = tmp_path / "huri-module-servo"
+    copy = tmp_path / "servo"
     shutil.copytree(ROOT, copy, ignore=_LOCAL)
     return copy
 
@@ -56,17 +58,17 @@ def renamed(tmp_path):
 def test_the_example_module_works(template_on_path):
     from huri_events.speech import Transcript
 
-    from huri_events_example import Shout
-    from huri_example.module import Shouter
+    from example.module import Shouter
+    from example_events import Shout
 
     out = ModuleHarness(Shouter).run(Transcript("hi", True))
     assert out == [Shout("HI!")]
 
 
 def test_its_manifest_matches_the_module(template_on_path):
-    from huri_example.module import Shouter
+    from example.module import Shouter
 
-    manifest = load_manifest(ROOT / "huri_example" / "huri_module.toml")
+    manifest = load_manifest(ROOT / "example" / "huri_module.toml")
     assert manifest.name == "example"
     assert (manifest.input.topic, manifest.output.topic) == (
         Shouter.input_type,
@@ -79,15 +81,67 @@ def test_its_manifest_matches_the_module(template_on_path):
         assert port.event == f"{cls.__module__}:{cls.__qualname__}"
 
 
+def _huri_style_names(root, name):
+    """Files naming the module like an official one (huri-module-<name>, ...)."""
+    bad = [f"huri-module-{name}", f"huri_{name}", f"huri-events-{name}"]
+    bad.append(f"huri_events_{name}")
+    return [
+        str(f.relative_to(root))
+        for f in root.rglob("*")
+        if f.is_file()
+        and not {
+            ".git",
+            ".venv",
+            "__pycache__",
+            ".mypy_cache",
+            ".pytest_cache",
+            "build",
+            "dist",
+        }
+        & set(f.parts)
+        and not any(p.endswith(".egg-info") for p in f.parts)
+        and f.name != "test_template.py"
+        and any(b in f.read_text(errors="ignore") for b in bad)
+    ]
+
+
+def test_renaming_the_template(renamed):
+    assert (renamed / "servo" / "module.py").is_file()
+    assert (renamed / "events" / "servo_events" / "__init__.py").is_file()
+    assert 'name = "servo"' in (renamed / "pyproject.toml").read_text()
+    assert (
+        'name = "servo-events"' in (renamed / "events" / "pyproject.toml").read_text()
+    )
+    pyproject = (renamed / "pyproject.toml").read_text()
+    entry = pyproject.split('[project.entry-points."huri.modules"]')[1]
+    assert 'servo = "servo.module:Shouter"' in entry.split("[tool")[0]
+    assert _huri_style_names(renamed, "servo") == []
+
+
+def test_creating_the_repository():
+    readme = (ROOT / "README.md").read_text()
+    start = readme.split("<!-- template:start -->")[1].split("<!-- template:end -->")[0]
+    section = start.split("## Starting a module from this template")[1]
+    assert "huri-module-<name>" not in section
+    assert "after your module" in section
+    assert "`huri-module`" in section and "huri hub search" in section
+
+
+def test_the_template_itself_before_renaming():
+    pyproject = (ROOT / "pyproject.toml").read_text()
+    assert 'name = "example"' in pyproject
+    assert 'example = "example.module:Shouter"' in pyproject
+    assert 'name = "example-events"' in (ROOT / "events" / "pyproject.toml").read_text()
+    assert _huri_style_names(ROOT, "example") == []
+
+
 def test_rename_leaves_no_trace_of_the_example(renamed):
-    assert (renamed / "huri_servo" / "module.py").is_file()
-    assert (renamed / "events" / "huri_events_servo" / "__init__.py").is_file()
+    assert (renamed / "servo" / "module.py").is_file()
     assert not (renamed / "tests" / "test_template.py").exists()
     # The module itself is renamed: its entry point and manifest.
     pyproject = (renamed / "pyproject.toml").read_text()
-    assert 'servo = "huri_servo.module:Shouter"' in pyproject
-    assert 'name = "huri-module-servo"' in pyproject
-    assert 'name = "servo"' in (renamed / "huri_servo" / "huri_module.toml").read_text()
+    assert 'servo = "servo.module:Shouter"' in pyproject
+    assert 'name = "servo"' in (renamed / "servo" / "huri_module.toml").read_text()
     leftovers = subprocess.run(
         [
             "grep",
@@ -112,18 +166,32 @@ def test_rename_removes_the_template_bootstrap(renamed):
     readme = (renamed / "README.md").read_text()
     for gone in ("rename.sh", "Rename the", "template:start", "template:end"):
         assert gone not in readme, gone
-    assert readme.startswith("# huri-module-servo\n")
+    assert readme.startswith("# servo\n")
     assert "## Installing and testing it" in readme
 
 
-@pytest.mark.parametrize("name", ["huri", "Servo", "1servo", "servo-arm"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "huri",
+        "huri_core",
+        "huri_events",
+        "json",
+        "asyncio",
+        "Servo",
+        "1servo",
+        "servo-arm",
+        "events",
+        "tests",
+    ],
+)
 def test_rename_refuses_bad_names(tmp_path, name):
     copy = _copy(tmp_path)
     run = subprocess.run(
         ["bash", str(copy / "rename.sh"), name], capture_output=True, text=True
     )
     assert run.returncode == 2, run.stderr
-    assert (copy / "huri_example").is_dir() and (copy / "rename.sh").is_file()
+    assert (copy / "example").is_dir() and (copy / "rename.sh").is_file()
 
 
 def test_rename_warns_about_a_curated_module_name(tmp_path):
@@ -133,7 +201,7 @@ def test_rename_warns_about_a_curated_module_name(tmp_path):
     )
     assert run.returncode == 0, run.stderr
     assert "curated" in run.stderr
-    assert (copy / "huri_stt").is_dir()
+    assert (copy / "stt").is_dir()
 
 
 @pytest.mark.parametrize(
@@ -184,16 +252,16 @@ def test_the_renamed_module_is_consistent(renamed):
 from huri_core.core.manifest import load_manifest
 from huri_core.testing import ModuleHarness
 from huri_events.speech import Transcript
-from huri_events_servo import Shout
-from huri_servo.module import Shouter
+from servo.module import Shouter
+from servo_events import Shout
 
 assert ModuleHarness(Shouter).run(Transcript("hi", True)) == [Shout("HI!")]
-m = load_manifest("huri_servo/huri_module.toml")
+m = load_manifest("servo/huri_module.toml")
 assert (m.name, m.input.topic, m.output.topic) == (
     "servo", Shouter.input_type, Shouter.output_type
 ), m
 assert Shouter.output_type == "servo.shout"
-assert m.output.event == "huri_events_servo:Shout"
+assert m.output.event == "servo_events:Shout"
 """
     subprocess.run(
         [sys.executable, "-c", probe],
@@ -208,7 +276,7 @@ def test_a_model_library_imported_at_the_top_of_the_module_fails_the_template_te
 ):
     """tests/test_model_imports.py, on a copy whose module imports torch."""
     copy = _copy(tmp_path)
-    module = copy / "huri_example" / "module.py"
+    module = copy / "example" / "module.py"
     module.write_text("import torch  # noqa: F401\n" + module.read_text())
     check = copy / "tests" / "test_model_imports.py"
     check.write_text(
@@ -229,7 +297,7 @@ def test_a_model_library_imported_at_the_top_of_the_module_fails_the_template_te
 def test_a_library_that_checks_sys_modules_passes_the_template_tests(tmp_path):
     """scipy tests `"torch" in sys.modules`: a hidden library must stay out."""
     copy = _copy(tmp_path)
-    module = copy / "huri_example" / "module.py"
+    module = copy / "example" / "module.py"
     module.write_text(
         "import sys\n\nassert 'torch' not in sys.modules\n" + module.read_text()
     )

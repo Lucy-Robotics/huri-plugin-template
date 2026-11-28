@@ -3,7 +3,7 @@ requires = ["setuptools>=64,<82"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "huri-module-example"
+name = "example"
 version = "0.1.0"
 description = "HuRI module example: shouts every finished transcript"
 readme = "README.md"
@@ -13,7 +13,7 @@ dependencies = [
   "huri-events>=0.3,<0.4",          # the curated events it consumes
   # The events it introduces (events/): on no package index, so installed
   # together with the module, from the same checkout or tag (see the README).
-  "huri-events-example>=0.1,<0.2",
+  "example-events>=0.1,<0.2",
   # Your module's own dependencies go here; hardware-specific pins go in
   # requirements-{cpu,nvidia,amd}.txt (install.sh picks one).
 ]
@@ -21,9 +21,9 @@ dependencies = [
 # Edit these: point them at your module's repository (pip and package indexes
 # show them to whoever installs the module).
 [project.urls]
-Homepage = "https://github.com/your-org/huri-module-example"
-Repository = "https://github.com/your-org/huri-module-example"
-Issues = "https://github.com/your-org/huri-module-example/issues"
+Homepage = "https://github.com/your-org/example"
+Repository = "https://github.com/your-org/example"
+Issues = "https://github.com/your-org/example/issues"
 
 [project.optional-dependencies]
 # flake8-pyproject: flake8 alone does not read [tool.flake8] below.
@@ -35,18 +35,18 @@ dev = [
 # How HuRI finds the module: once installed, `name: example` works in a client's
 # YAML (and the server's HURI_MODULES).
 [project.entry-points."huri.modules"]
-example = "huri_example.module:Shouter"
+example = "example.module:Shouter"
 
 [tool.setuptools.packages.find]
-include = ["huri_example*"]
+include = ["example", "example.*"]
 
 [tool.setuptools.package-data]
-huri_example = ["huri_module.toml"]
+example = ["huri_module.toml"]
 
 [tool.isort]
 profile = "black"
 line_length = 88
-known_first_party = ["huri_example", "huri_events_example"]
+known_first_party = ["example", "example_events"]
 
 [tool.black]
 line-length = 88
@@ -58,7 +58,7 @@ extend-ignore = ["E203"]
 exclude = [".git", "__pycache__", ".venv", "venv", "build", "dist", "*.egg-info"]
 
 [tool.mypy]
-files = ["huri_example", "events/huri_events_example"]
+files = ["example", "events/example_events"]
 python_version = "3.10"
 ignore_missing_imports = true
 check_untyped_defs = true

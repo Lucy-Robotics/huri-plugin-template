@@ -5,8 +5,8 @@ from huri_core.core.plugins import find_manifest, load_events, load_modules
 from huri_core.testing import ModuleHarness
 from huri_events.speech import Transcript
 
-from huri_events_example import Shout
-from huri_example.module import Shouter
+from example.module import Shouter
+from example_events import Shout
 
 
 def test_shouts_finished_transcripts_only():

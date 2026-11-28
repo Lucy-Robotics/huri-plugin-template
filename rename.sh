@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Turns the template into your module:  ./rename.sh servo
-# Renames example/Example in every file and directory: huri_example ->
-# huri_servo, huri-module-example -> huri-module-servo, the "example." topic
-# namespace -> "servo.", and so on. Run it once, on a fresh copy.
+# Renames example/Example in every file and directory: example -> servo,
+# example_events -> servo_events, example-events -> servo-events, the
+# "example." topic namespace -> "servo.", and so on. Run it once, on a fresh copy.
 #
 # Left alone: LICENSE and .github/ (their "example" is plain English, or
 # nothing of the module's), git's and Python's own directories (.git, a
@@ -19,6 +19,15 @@ if [[ "$name" == huri ]]; then
   echo "\"huri\" is the namespace of the curated events (huri.*): choose another name" >&2
   exit 2
 fi
+# The name becomes a top-level package, so it must not shadow HuRI's or Python's own.
+if [[ "$name" == huri_* ]]; then
+  echo "\"$name\" would shadow a HuRI package (huri_*): choose another name" >&2
+  exit 2
+fi
+if python3 -c 'import sys; sys.exit(sys.argv[1] not in getattr(sys, "stdlib_module_names", ()))' "$name" 2>/dev/null; then
+  echo "\"$name\" is a Python standard library module: choose another name" >&2
+  exit 2
+fi
 # The curated modules of huri-modules (its registry.toml): a server running
 # both could not tell them apart.
 curated=" stt tag tts tts_cosyvoice vad emo eag rag qag mov "
@@ -26,7 +35,12 @@ if [[ "$curated" == *" $name "* ]]; then
   echo "warning: \"$name\" is the name of a curated HuRI module; yours would clash with it" >&2
 fi
 Name="$(tr '[:lower:]' '[:upper:]' <<<"${name:0:1}")${name:1}"
-[[ -d huri_example ]] || { echo "already renamed (no huri_example/)" >&2; exit 1; }
+# The package becomes a top-level folder named after the module.
+if [[ -e "$name" ]]; then
+  echo "\"$name\" is already a folder of this repository: choose another name" >&2
+  exit 2
+fi
+[[ -d example ]] || { echo "already renamed (no example/)" >&2; exit 1; }
 
 sed -i '/<!-- template:start -->/,/<!-- template:end -->/d' README.md
 readme="$(cat -s README.md)" && printf '%s\n' "$readme" >README.md # one blank line left
@@ -38,7 +52,7 @@ grep "${grep_args[@]}" -e example -e Example . |
   while IFS= read -r -d '' f; do
     sed -i -e "s/example/$name/g" -e "s/Example/$Name/g" "$f"
   done
-mv huri_example "huri_$name"
-mv events/huri_events_example "events/huri_events_$name"
+mv example "$name"
+mv events/example_events "events/${name}_events"
 rm -f -- "$self"
-echo "renamed to $name: edit huri_$name/module.py, its manifest and tests, then commit"
+echo "renamed to $name: edit $name/module.py, its manifest and tests, then commit"

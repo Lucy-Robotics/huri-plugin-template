@@ -1,4 +1,4 @@
-# huri-module-example
+# example
 
 A HuRI module, built and tested on its own: you need `huri-core`, the curated
 events (`huri-events`) and this repository, not the rest of HuRI, a GPU or a
@@ -10,8 +10,9 @@ running pipeline.
 ## Starting a module from this template
 
 1. On GitHub, click **Use this template** > **Create a new repository**
-   (name it `huri-module-<name>`), then clone your new repository.
-2. Rename the example to your module, once, on that fresh clone:
+   (name it after your module, e.g. `servo`), then clone your new repository.
+   Add the GitHub topic `huri-module` to it, so that `huri hub search` finds it.
+2. Rename the template to your module, once, on that fresh clone:
 
    ```sh
    ./rename.sh servo                       # your module's name, lowercase
@@ -21,7 +22,8 @@ running pipeline.
    namespace, entry point, manifest, this README), leaves `LICENSE` and
    `.github/` alone, and removes what only the template needs: this section,
    `tests/test_template.py` and the script itself. It refuses `huri` (the
-   namespace of the curated events) and warns about the names of curated
+   namespace of the curated events) and the name of a folder the repository
+   already has (`events`, `tests`), and warns about the names of curated
    modules (`stt`, `tts`, `vad`, ...), which a server running both could not
    tell apart.
 3. Commit, then follow the rest of this README.
@@ -70,10 +72,10 @@ Point `[project.urls]` in `pyproject.toml` at your repository.
 
 | Path | What it is |
 |---|---|
-| `huri_example/module.py` | the module: a `Module` subclass with its input/output topics and `process()` |
-| `huri_example/huri_module.toml` | its manifest, read by HuRI's startup check and the hub |
+| `example/module.py` | the module: a `Module` subclass with its input/output topics and `process()` |
+| `example/huri_module.toml` | its manifest, read by HuRI's startup check and the hub |
 | `pyproject.toml` | the `huri.modules` entry point (`example = ...`), the dependencies and the project URLs |
-| `events/` | the events the module introduces, as their own light distribution (`huri-events-example`) in their own topic namespace (`example.*`) — so a client can decode them without installing the module |
+| `events/` | the events the module introduces, as their own light distribution (`example-events`) in their own topic namespace (`example.*`) — so a client can decode them without installing the module |
 | `tests/` | the module tested alone (`ModuleHarness`), the checks the server runs at startup, and that the module imports without its model libraries |
 | `requirements-{cpu,nvidia,amd}.txt`, `install.sh` | hardware-specific pins, and the script choosing them |
 | `.github/workflows/ci.yml` | the same, on every push and pull request, against pinned `huri-core` and `huri-modules` refs, plus the build |
@@ -83,21 +85,21 @@ described in the [huri-core README](https://github.com/Lucy-Robotics/huri-core#r
 
 ## The module and its events: two distributions, one repository
 
-The module depends on `huri-events-example`, which lives in `events/` and is on
+The module depends on `example-events`, which lives in `events/` and is on
 no package index: pip finds it only when it is told where. So the module and
 its events are installed **together, in one pip call**, as `install.sh` does
 from a checkout. From GitHub, at a release tag:
 
 ```sh
 python -m pip install \
-  "huri-events-example @ git+https://github.com/<org>/<repo>.git@<tag>#subdirectory=events" \
-  "huri-module-example @ git+https://github.com/<org>/<repo>.git@<tag>"
+  "example-events @ git+https://github.com/<org>/<repo>.git@<tag>#subdirectory=events" \
+  "example @ git+https://github.com/<org>/<repo>.git@<tag>"
 ```
 
 A client decoding `example.shout` installs only the events:
 
 ```sh
-python -m pip install "huri-events-example @ git+https://github.com/<org>/<repo>.git@<tag>#subdirectory=events"
+python -m pip install "example-events @ git+https://github.com/<org>/<repo>.git@<tag>#subdirectory=events"
 ```
 
 ## Using it in HuRI

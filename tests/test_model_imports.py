@@ -26,12 +26,12 @@ sys.meta_path.insert(0, Hide())
 
 def test_the_module_imports_with_its_model_libraries_hidden():
     # The module, not a class: its top-level imports are what is checked.
-    code = f"HIDDEN = {MODEL_LIBRARIES!r}\n{HIDE}import huri_example.module\n"
+    code = f"HIDDEN = {MODEL_LIBRARIES!r}\n{HIDE}import example.module\n"
     # cwd=ROOT: the module of this checkout, before any installed copy.
     run = subprocess.run(
         [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True
     )
     assert run.returncode == 0, (
-        f"huri_example/module.py imports one of {MODEL_LIBRARIES} when it is "
+        f"example/module.py imports one of {MODEL_LIBRARIES} when it is "
         f"imported; import it inside the method that uses it:\n{run.stderr}"
     )

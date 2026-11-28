@@ -4,12 +4,12 @@
 # huri_servo, huri-module-example -> huri-module-servo, the "example." topic
 # namespace -> "servo.", and so on. Run it once, on a fresh copy.
 #
-# Left alone: LICENSE and .github/ (their "example" is plain English, or
-# nothing of the module's), git's and Python's own directories (.git, a
-# virtualenv, caches, build outputs). Removed, being the template's own: the
+# Left alone: LICENSE and .github/ but for the form below (their "example" is
+# plain English, or nothing of the module's), git's and Python's own
+# directories (.git, a virtualenv, caches, build outputs). Removed, being the template's own: the
 # README's bootstrap section (between the template:start/end markers),
-# tests/test_template.py (it tests the template, not your module) and this
-# script.
+# tests/test_template.py (it tests the template, not your module), the ATP
+# anomaly issue form (.github/ISSUE_TEMPLATE/atp_anomaly.yml) and this script.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 self="$(basename "${BASH_SOURCE[0]}")"
@@ -30,7 +30,7 @@ Name="$(tr '[:lower:]' '[:upper:]' <<<"${name:0:1}")${name:1}"
 
 sed -i '/<!-- template:start -->/,/<!-- template:end -->/d' README.md
 readme="$(cat -s README.md)" && printf '%s\n' "$readme" >README.md # one blank line left
-rm -f tests/test_template.py
+rm -f tests/test_template.py .github/ISSUE_TEMPLATE/atp_anomaly.yml
 skip_dirs=(.git .github .venv venv .tox .pytest_cache __pycache__ build dist '*.egg-info')
 grep_args=(-rlIZ "--exclude=$self" --exclude=LICENSE)
 for d in "${skip_dirs[@]}"; do grep_args+=("--exclude-dir=$d"); done

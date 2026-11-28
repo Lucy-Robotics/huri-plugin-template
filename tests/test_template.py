@@ -178,6 +178,10 @@ def test_rename_leaves_license_ci_and_local_dirs_alone(renamed):
         assert (renamed / d / "example.txt").read_text() == "example\n"
 
 
+def test_a_module_made_from_the_template_has_no_atp_anomaly_form(renamed):
+    assert not (renamed / ".github" / "ISSUE_TEMPLATE" / "atp_anomaly.yml").exists()
+
+
 def test_the_renamed_module_is_consistent(renamed):
     """The renamed copy imports, runs, and still matches its manifest."""
     probe = """

@@ -20,8 +20,9 @@ running pipeline.
    It renames `example`/`Example` everywhere (package, events package, topic
    namespace, entry point, manifest, this README), leaves `LICENSE` and
    `.github/` alone, and removes what only the template needs: this section,
-   `tests/test_template.py` and the script itself. It refuses `huri` (the
-   namespace of the curated events) and warns about the names of curated
+   `tests/test_template.py`, the ATP anomaly issue form
+   (`.github/ISSUE_TEMPLATE/atp_anomaly.yml`) and the script itself. It
+   refuses `huri` (the namespace of the curated events) and warns about the names of curated
    modules (`stt`, `tts`, `vad`, ...), which a server running both could not
    tell apart.
 3. Commit, then follow the rest of this README.
